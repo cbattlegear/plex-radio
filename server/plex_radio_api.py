@@ -26,8 +26,13 @@ def generate_daily_playlists():
     """
     channel_playlists.clear()  # Clear existing playlists
 
-    for channel in current_config.get_channels():
-        daily_playlist_instance = daily_playlist.DailyPlaylist(plex, channel['playlist'])
+    for channel in current_config.validate_all_channels():
+        playback_mode = channel['playback']  # Already validated
+        daily_playlist_instance = daily_playlist.DailyPlaylist(
+            plex, 
+            channel['playlist'], 
+            playback_mode
+        )
         channel_playlists.append(daily_playlist_instance)
 
 def initialize_app():
@@ -152,17 +157,23 @@ def get_current_song_from_channel(channel_number):
         "status": "success",
         "data": song_info,
         "timestamp": datetime.datetime.now().isoformat(),
-        "channel": channel['name']
+        "channel": {
+            "name": channel['name'],
+            "playlist": channel['playlist'],
+            "playback": channel.get('playback', 'shuffle')
+        }
     })
 
 @app.route('/channels', methods=['GET'])
 def get_channels():
     """
     GET /channels
-    Returns a list of available channels
+    Returns a list of available channels with their validated playback modes
     """
     try:
-        channels = current_config.get_channels()
+        # Get validated channels with proper playback modes
+        channels = current_config.validate_all_channels()
+        
         return jsonify({
             "status": "success",
             "data": channels,

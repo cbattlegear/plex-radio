@@ -3,21 +3,28 @@ import datetime
 import random
 
 class DailyPlaylist:
-    def __init__(self, plex, channel_playlist_name):
+    def __init__(self, plex, channel_playlist_name, playback_mode='shuffle'):
         self.plex = plex
         self.channel_playlist_name = channel_playlist_name
+        self.playback_mode = playback_mode  # 'shuffle' or 'sequential'
         self.current_playlist = None
         self.creation_time = datetime.datetime.now()
         self.playlist_items = None
         self.refresh_if_needed()
 
     def generate_playlist(self):
-        """Generate a shuffled playlist that is limited to 24 hours long"""
-        random.shuffle(self.current_playlist)
+        """Generate a playlist that is limited to 24 hours long, with optional shuffling"""
+        # Create a copy of the playlist to avoid modifying the original
+        playlist_copy = self.current_playlist.copy()
+        
+        # Apply shuffling based on playback mode
+        if self.playback_mode == 'shuffle':
+            random.shuffle(playlist_copy)
+        # For sequential mode, we keep the original order
 
         limited_playlist = []
         # Limit the playlist to 24 hours
-        for item in self.current_playlist:
+        for item in playlist_copy:
             total_duration = sum(item.duration for item in limited_playlist)
             if total_duration < 24 * 60 * 60 * 1000:  # 24 hours in milliseconds
                 limited_playlist.append(item)

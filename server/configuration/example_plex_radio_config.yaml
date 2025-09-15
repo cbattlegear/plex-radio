@@ -5,5 +5,10 @@ plex:
 channels:
   - name: "Jazz Radio"
     playlist: "Jazz Radio"
+    playback: "shuffle"  # Explicitly set to shuffle
   - name: "Rock Radio"
     playlist: "Rock Radio"
+    playback: "sequential"  # Explicitly set to sequential
+  - name: "Pop Radio"
+    playlist: "Pop Radio"
+    # No playback specified - will default to shuffle

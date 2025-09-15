@@ -6,7 +6,8 @@ A REST API that simulates radio channels by providing information about the curr
 
 - **Time-based playback simulation**: Calculates what song should be playing based on current time
 - **Multiple radio channels**: Support for multiple configured channels/playlists
-- **Daily playlist generation**: Creates shuffled 24-hour playlists for each channel
+- **Flexible playback modes**: Choose between sequential or shuffle playback for each channel
+- **Daily playlist generation**: Creates 24-hour playlists for each channel with configurable playback order
 - **Current and next song info**: Returns both current and upcoming track details
 - **YAML configuration**: Easy configuration of Plex server and channels
 - **Direct media links**: Provides direct URLs to media files for playback
@@ -67,7 +68,11 @@ Returns the current song information from a specific channel by number (0-based 
     }
   },
   "timestamp": "2025-08-25T10:30:00.123456",
-  "channel": "Jazz Radio"
+  "channel": {
+    "name": "Jazz Radio",
+    "playlist": "Jazz Radio",
+    "playback": "shuffle"
+  }
 }
 ```
 
@@ -81,11 +86,13 @@ Lists all configured radio channels.
   "data": [
     {
       "name": "Jazz Radio", 
-      "playlist": "Jazz Radio"
+      "playlist": "Jazz Radio",
+      "playback": "shuffle"
     },
     {
       "name": "Rock Radio",
-      "playlist": "Rock Radio"
+      "playlist": "Rock Radio",
+      "playback": "sequential"
     }
   ],
   "count": 2
@@ -138,8 +145,10 @@ Health check endpoint to verify API and Plex server connectivity.
    channels:
      - name: "Jazz Radio"
        playlist: "Your Jazz Playlist Name"
+       playback: "shuffle"  # Optional: "shuffle" (default) or "sequential"
      - name: "Rock Radio"
        playlist: "Your Rock Playlist Name"
+       playback: "sequential"  # Play songs in playlist order
    ```
 
 ## Configuration
@@ -162,9 +171,17 @@ plex:
 channels:
   - name: "Jazz Radio"                # Display name for the channel
     playlist: "Jazz Favorites"        # Exact name of your Plex playlist
+    playback: "shuffle"               # Optional: "shuffle" (default) or "sequential"
   - name: "Rock Radio"
     playlist: "Rock Classics"
+    playback: "sequential"            # Play songs in playlist order
+  - name: "Pop Radio"                 # playback field is optional
+    playlist: "Pop Hits"              # Defaults to "shuffle" if playback not specified
 ```
+
+### Playback Modes
+- **shuffle** (default): Songs are shuffled daily, creating a random order each day
+- **sequential**: Songs play in their original playlist order, allowing you to listen through albums or curated sequences
 
 ## Usage
 
@@ -238,7 +255,7 @@ curl http://localhost:5000/health
 
 The API simulates radio stations by:
 
-1. **Daily Playlist Generation**: At startup, it creates shuffled 24-hour playlists for each configured channel
+1. **Daily Playlist Generation**: At startup, it creates 24-hour playlists for each configured channel, either shuffled or in sequential order based on the `playback` setting
 2. **Time-based Calculation**: Uses current time of day (seconds since midnight) to determine position in the playlist
 3. **Song Position**: Calculates exactly where within a song playback should start
 4. **Seamless Playback**: Provides both current song and next song information for gapless transitions
@@ -333,7 +350,9 @@ The API includes comprehensive error handling for:
 
 - The configuration file `plex_radio_config.yaml` is gitignored for security
 - Use the `example_plex_radio_config.yaml` as a template
-- Each channel generates a new shuffled playlist daily at startup
+- Each channel generates a new playlist daily at startup (shuffled or sequential based on configuration)
 - Start times are calculated as seconds into the current song
 - The API runs in debug mode by default (disable for production)
 - Docker deployment automatically runs in production mode
+- Sequential playback preserves original playlist order, perfect for concept albums or DJ mixes
+- Shuffle mode provides variety while maintaining the radio experience
